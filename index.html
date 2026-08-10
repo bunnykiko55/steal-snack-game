@@ -911,7 +911,7 @@
 
     // “敬请期待”关卡使用独立绘制的暖色储物罐锁标，避免继续叠加程序几何图形。
     const FUTURE_LEVEL_ART = Object.freeze({
-      future: "./assets/icons-v3/level-future.webp"
+      future: "./assets/icons-v3/level-future.webp?v=20260810b"
     });
 
     const OBSTACLE_ART = Object.freeze({
@@ -957,19 +957,19 @@
     /* 第 1 轮美术修正：蛋糕、矮桌、桌布与落地阴影已经烘焙进同一张厨房底图，
        避免独立贴图产生悬浮、锐度不一致和重复阴影。 */
     const SCENE_ART_V4 = Object.freeze({
-      playfieldGoal: "./assets/environment-v4/kitchen-playfield-cake.webp"
+      playfieldGoal: "./assets/environment-v4/kitchen-playfield-cake.webp?v=20260810b"
     });
 
     /* 操作说明必须与对局使用同一套绘本角色，禁止回退到早期内嵌贴纸缩略图。 */
     const RULE_ART = Object.freeze({
-      mouseRun: "./assets/characters-v3/mouse-run.webp",
-      catFront: "./assets/characters-v3/cat-front.webp",
-      cakeSprite: "./assets/characters-v3/cake-intact.webp"
+      mouseRun: "./assets/characters-v3/mouse-run.webp?v=20260810b",
+      catFront: "./assets/characters-v3/cat-front.webp?v=20260810b",
+      cakeSprite: "./assets/characters-v3/cake-intact.webp?v=20260810b"
     });
 
     /* 第 3 轮障碍修正：以独立面粉袋替代多件备料组合，保持一障碍一物体。 */
     const OBSTACLE_ART_V4 = Object.freeze({
-      flourSack: "./assets/obstacles-v4/flour-sack.webp"
+      flourSack: "./assets/obstacles-v4/flour-sack.webp?v=20260810b"
     });
 
     const ReferenceArt = {
@@ -980,7 +980,7 @@
         dom.app.classList.remove("reference-art", "is-paused");
         const pauseMouse = document.querySelector("#pause-mouse");
         /* 暂停弹窗使用同一角色设定的专用探头立绘，避免旧参考稿中的几何头像。 */
-        if (pauseMouse) pauseMouse.src = "./assets/ui-v4/pause-mouse.webp";
+        if (pauseMouse) pauseMouse.src = "./assets/ui-v4/pause-mouse.webp?v=20260810b";
         document.querySelectorAll("[data-rule-art]").forEach(node => {
           const key = node.dataset.ruleArt;
           node.src = RULE_ART[key] || "";
