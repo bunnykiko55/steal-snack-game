@@ -266,6 +266,18 @@
       transform: translateX(-50%) scale(1.06);
     }
 
+    /* 第一阶段只用琥珀色提醒“猫咪将醒”，与真正睁眼后的红色警戒明确区分。 */
+    #phase-banner.warning {
+      color: #6d2b1c;
+      background: linear-gradient(180deg, #fff2a7 0%, #f6c65f 100%);
+      border-color: #a75628;
+      box-shadow:
+        0 0 0 3px rgba(255, 251, 222, .74),
+        0 5px 0 rgba(133, 67, 31, .18),
+        0 8px 18px rgba(105, 54, 28, .18);
+      transform: translateX(-50%) scale(1.03);
+    }
+
     #gesture-hint {
       /* 第一关已用画布中的路径虚线引导；不再叠加大卡片遮住出生点。 */
       display: none;
@@ -729,7 +741,7 @@
         <button id="start-btn" class="cream-button" type="button">开始游戏</button>
         <button id="levels-btn" class="cream-button secondary" type="button">关卡选择</button>
         <button id="rules-btn" class="cream-button secondary" type="button">操作说明</button>
-        <p class="home-tip">上滑前进 · 猫咪回头前一定要松手</p>
+        <p class="home-tip">上滑前进 · 看见猫咪摇尾立刻松手</p>
       </div>
     </section>
 
@@ -761,7 +773,7 @@
         <h2>怎样偷吃？</h2>
         <div class="rules">
           <div class="rule"><div class="rule-icon"><img data-rule-art="mouseRun" alt=""></div><div><strong>按住上滑，左右绕行</strong><span>持续按住即可前进，左右拖动绕开餐车、面粉袋等单体障碍。</span></div></div>
-          <div class="rule"><div class="rule-icon"><img data-rule-art="catFront" alt=""></div><div><strong>猫咪回头，立刻松手</strong><span>猫咪正面看你时完全不能触碰屏幕，回头瞬间仍按着也会被抓住。</span></div></div>
+          <div class="rule"><div class="rule-icon"><img data-rule-art="catInvestigate" alt=""></div><div><strong>尾巴轻摇，立刻停下</strong><span>猫咪先轻摇尾巴试探；及时松手会安全复位，持续移动到猫咪睁眼就会被发现。</span></div></div>
           <div class="rule"><div class="rule-icon"><img data-rule-art="cakeSprite" alt=""></div><div><strong>碰到蛋糕，立即通关</strong><span>在倒计时结束前越过全部阻碍，碰到蛋糕餐台即可解锁下一关。</span></div></div>
         </div>
         <button id="rules-ok" class="cream-button small" type="button">知道啦</button>
@@ -824,33 +836,33 @@
     const TAU = Math.PI * 2;
 
     const LEVELS = Object.freeze([
-      // 第一关只教“走与停”，可在第一个安全阶段内沿直线完成。
-      { id: 1, name: "餐桌入门", time: 45, safe: [4.6, 5.4], danger: [.9, 1.2], speed: 112, icon: "table", obstacles: [] },
+      // rest 是熟睡阶段；warning 是轻摇尾巴的反应窗；investigate 是睁眼确认窗。
+      { id: 1, name: "餐桌入门", time: 45, rest: [4.6, 5.4], warning: 1.10, investigate: .44, speed: 112, icon: "table", obstacles: [] },
 
       /*
        * 后五关严格按 1→5 组实体障碍递增。每一组都横跨中央直线路线，
        * 并左右交替留出口，所以玩家必须逐个绕行，不能把它们当背景摆设。
        */
-      { id: 2, name: "餐车绕行", time: 48, safe: [3.8, 4.5], danger: [1.1, 1.5], speed: 98, icon: "cat", obstacles: [
+      { id: 2, name: "餐车绕行", time: 48, rest: [3.8, 4.5], warning: 1.00, investigate: .40, speed: 98, icon: "cat", obstacles: [
         /* 正中落地的备料组：第一次明确教学“直走会被挡住”。 */
         { type: "flourSack", x: 180, y: 420 }
       ]},
-      { id: 3, name: "烘焙备料", time: 52, safe: [3.0, 3.7], danger: [1.4, 1.9], speed: 86, icon: "cookie", obstacles: [
+      { id: 3, name: "烘焙备料", time: 52, rest: [3.0, 3.7], warning: .90, investigate: .36, speed: 86, icon: "cookie", obstacles: [
         { type: "flourSack", x: 112, y: 465 },
         { type: "bakeryCart", x: 246, y: 350 }
       ]},
-      { id: 4, name: "茶点穿行", time: 58, safe: [2.4, 3.0], danger: [1.7, 2.3], speed: 76, icon: "can", obstacles: [
+      { id: 4, name: "茶点穿行", time: 58, rest: [2.4, 3.0], warning: .82, investigate: .32, speed: 76, icon: "can", obstacles: [
         { type: "bakeryCart", x: 185, y: 495 },
         { type: "flourSack", x: 105, y: 410 },
         { type: "dessertTrolley", x: 258, y: 330 }
       ]},
-      { id: 5, name: "忙碌厨房", time: 66, safe: [1.8, 2.3], danger: [2.0, 2.7], speed: 66, icon: "cheese", obstacles: [
+      { id: 5, name: "忙碌厨房", time: 66, rest: [1.8, 2.3], warning: .74, investigate: .28, speed: 66, icon: "cheese", obstacles: [
         { type: "bakeryCart", x: 180, y: 505 },
         { type: "flourSack", x: 105, y: 445 },
         { type: "dessertTrolley", x: 252, y: 385 },
         { type: "flourSack", x: 92, y: 325 }
       ]},
-      { id: 6, name: "终极偷吃", time: 78, safe: [1.2, 1.6], danger: [2.5, 3.2], speed: 56, icon: "maze", obstacles: [
+      { id: 6, name: "终极偷吃", time: 78, rest: [1.2, 1.6], warning: .66, investigate: .24, speed: 56, icon: "maze", obstacles: [
         /* 五道互不共线的实体路障：中间封路后，依次左、右、左、右换边。 */
         { type: "flourSack", x: 180, y: 500 },
         { type: "bakeryCart", x: 252, y: 450 },
@@ -942,9 +954,9 @@
     const view = { width: 0, height: 0, scale: 1, ox: 0, oy: 0, dpr: 1 };
     const app = { screen: "home", lastTime: performance.now(), lastRender: 0, targetFPS: 60, slowFrames: 0, t: 0 };
     const game = {
-      level: LEVELS[0], running: false, paused: false, won: false, phase: "safe", phaseLeft: 0,
+      level: LEVELS[0], running: false, paused: false, won: false, phase: "rest", phaseLeft: 0, phaseElapsed: 0,
       timeLeft: 45, elapsed: 0, mouse: { x: 180, y: 568, r: 14, moving: false, runT: 0, steer: 0 },
-      cake: { x: 180, y: 245, r: 36 }, catBlend: 0, hintLeft: 2.8, particles: [], failReason: ""
+      cake: { x: 180, y: 245, r: 36 }, warningSawMovement: false, hintLeft: 2.8, particles: [], failReason: ""
     };
 
     /* 参考图资源管理：先显示原生矢量备用画面，图片解码后无缝切换到精确稿。 */
@@ -960,10 +972,20 @@
       playfieldGoal: "./assets/environment-v4/kitchen-playfield-cake.webp?v=20260810b"
     });
 
+    /*
+     * 两阶段猫咪动作帧：保持现有橘白猫的体型、视角、奶油色描边与柔光。
+     * warning A/B 交替形成轻微耳朵/尾巴苏醒动作；investigate 为回头睁眼确认。
+     */
+    const CAT_AWAKEN_ART = Object.freeze({
+      catWarningA: "./assets/characters-v4/cat-warning-a.webp?v=20260811a",
+      catWarningB: "./assets/characters-v4/cat-warning-b.webp?v=20260811a",
+      catInvestigate: "./assets/characters-v4/cat-investigate.webp?v=20260811a"
+    });
+
     /* 操作说明必须与对局使用同一套绘本角色，禁止回退到早期内嵌贴纸缩略图。 */
     const RULE_ART = Object.freeze({
       mouseRun: "./assets/characters-v3/mouse-run.webp?v=20260810b",
-      catFront: "./assets/characters-v3/cat-front.webp?v=20260810b",
+      catInvestigate: "./assets/characters-v4/cat-investigate.webp?v=20260811a",
       cakeSprite: "./assets/characters-v3/cake-intact.webp?v=20260810b"
     });
 
@@ -985,7 +1007,7 @@
           const key = node.dataset.ruleArt;
           node.src = RULE_ART[key] || "";
         });
-        Object.entries({ ...UI_SPRITE_ART, ...CHARACTER_ART_V3, ...OBSTACLE_ART, ...OBSTACLE_ART_V4, ...GAME_ART, ...LEVEL_ICON_ART, ...FUTURE_LEVEL_ART, ...GOAL_ART_V2, ...SCENE_ART_V4 }).forEach(([key, src]) => {
+        Object.entries({ ...UI_SPRITE_ART, ...CHARACTER_ART_V3, ...CAT_AWAKEN_ART, ...OBSTACLE_ART, ...OBSTACLE_ART_V4, ...GAME_ART, ...LEVEL_ICON_ART, ...FUTURE_LEVEL_ART, ...GOAL_ART_V2, ...SCENE_ART_V4 }).forEach(([key, src]) => {
           const image = new Image(); image.decoding = "async";
           image.onload = () => {
             this.loaded[key] = true;
@@ -1079,7 +1101,7 @@
     Storage.load();
 
     /* ================================================================
-       四、音频控制：Base64 音频在文末初始化，首次手势统一解锁
+       四、音频控制：首次手势统一解锁；旧数数语音保留为离线兼容资源但不再播放
        ================================================================ */
     const AudioManager = {
       unlocked: false,
@@ -1176,7 +1198,7 @@
     initEmbeddedAudio();
 
     /* ================================================================
-       五、输入系统：上滑保持前进，左右偏移控制方向
+       五、输入系统：上滑保持前进，并独立记录“移动意图”供猫咪苏醒判定
        ================================================================ */
     const Input = {
       active: false, pointerId: null, startX: 0, startY: 0, x: 0, y: 0,
@@ -1187,7 +1209,6 @@
       down(event) {
         if (app.screen !== "game" || !game.running || game.paused) return;
         event.preventDefault(); AudioManager.unlock();
-        if (game.phase === "danger") { failGame("猫咪回头时你碰了屏幕！"); return; }
         const p = this.logicalPoint(event);
         this.active = true; this.pointerId = event.pointerId; this.startX = this.x = p.x; this.startY = this.y = p.y;
         try { dom.canvas.setPointerCapture(event.pointerId); } catch (_) {}
@@ -1195,18 +1216,20 @@
       move(event) {
         if (!this.active || event.pointerId !== this.pointerId) return;
         event.preventDefault();
-        if (game.phase === "danger") { failGame("猫咪看见你在动啦！"); return; }
         const p = this.logicalPoint(event); this.x = p.x; this.y = p.y;
       },
       up(event) {
         if (event.pointerId !== this.pointerId) return;
         event.preventDefault(); this.reset();
       },
+      /* 只判断手指是否给出了有效的向上移动指令，不把普通点击误判为偷跑。 */
+      moveIntent() {
+        return this.active && this.y - this.startY <= -8;
+      },
       velocity() {
-        if (!this.active || game.phase !== "safe") return { x: 0, y: 0, moving: false };
+        if (!this.moveIntent()) return { x: 0, y: 0, moving: false };
         const dx = this.x - this.startX;
         const dy = this.y - this.startY;
-        if (dy > -8) return { x: 0, y: 0, moving: false };
         const power = clamp((-dy - 8) / 50, .36, 1);
         return { x: clamp(dx / 65, -.82, .82) * game.level.speed, y: -game.level.speed * power, moving: true };
       }
@@ -1287,26 +1310,39 @@
     }
 
     /* ================================================================
-       七、123 木头人状态机和游戏生命周期
+       七、猫咪两阶段苏醒状态机和游戏生命周期
        ================================================================ */
     function phaseDuration(type) {
-      const range = game.level[type];
-      return rand(range[0], range[1]);
+      if (type === "rest") {
+        const range = game.level.rest;
+        return rand(range[0], range[1]);
+      }
+      return game.level[type];
     }
 
     function setPhase(type) {
       game.phase = type;
       game.phaseLeft = phaseDuration(type);
-      if (type === "safe") {
+      game.phaseElapsed = 0;
+      dom.phaseBanner.classList.remove("warning", "danger");
+
+      if (type === "rest") {
         dom.phaseBanner.textContent = "可以动！";
-        dom.phaseBanner.classList.remove("danger");
-        AudioManager.voiceNow();
+        game.warningSawMovement = false;
+      } else if (type === "warning") {
+        /* 第一阶段：尾巴和耳朵轻微动作，冻结角色，但给玩家完整松手机会。 */
+        dom.phaseBanner.textContent = "尾巴动了…快停！";
+        dom.phaseBanner.classList.add("warning");
+        game.warningSawMovement = game.mouse.moving || Input.moveIntent();
+        game.mouse.moving = false;
+        AudioManager.stopStep();
       } else {
-        dom.phaseBanner.textContent = "木头人！别动！";
+        /* 第二阶段：猫咪睁眼确认。继续保持移动意图直到确认窗结束才会失败。 */
+        dom.phaseBanner.textContent = "猫咪醒了！别动！";
         dom.phaseBanner.classList.add("danger");
         AudioManager.dingNow();
-        if (Input.active) { failGame("猫咪回头时你还按着屏幕！"); return; }
-        Input.reset();
+        game.mouse.moving = false;
+        AudioManager.stopStep();
       }
     }
 
@@ -1316,8 +1352,8 @@
       game.level = chosen; game.running = true; game.paused = false; game.won = false; game.failReason = "";
       game.timeLeft = chosen.time; game.elapsed = 0; game.mouse.x = 180; game.mouse.y = 568;
       game.mouse.runT = 0; game.mouse.steer = 0; game.mouse.moving = false;
-      game.catBlend = 0; game.hintLeft = chosen.id === 1 ? 4.2 : 0; game.particles = []; Input.reset();
-      app.screen = "game"; dom.app.classList.remove("is-paused"); setPhase("safe");
+      game.warningSawMovement = false; game.hintLeft = chosen.id === 1 ? 4.2 : 0; game.particles = []; Input.reset();
+      app.screen = "game"; dom.app.classList.remove("is-paused"); setPhase("rest");
       closeOverlays();
       dom.home.classList.add("hidden"); dom.result.classList.add("hidden"); dom.hud.classList.remove("hidden");
       dom.levelPill.textContent = `第${chosen.id}关 · ${chosen.name}`;
@@ -1377,14 +1413,33 @@
 
     function updateGame(dt) {
       if (app.screen !== "game" || !game.running || game.paused) return;
-      game.timeLeft -= dt; game.elapsed += dt; game.phaseLeft -= dt; game.hintLeft -= dt;
+      game.timeLeft -= dt; game.elapsed += dt; game.phaseLeft -= dt; game.phaseElapsed += dt; game.hintLeft -= dt;
       if (game.hintLeft <= 0) dom.hint.classList.add("hidden");
       if (game.timeLeft <= 0) { game.timeLeft = 0; failGame("时间到啦，猫咪守住了蛋糕！"); return; }
-      if (game.phaseLeft <= 0) setPhase(game.phase === "safe" ? "danger" : "safe");
-      if (!game.running) return;
-      const targetBlend = game.phase === "danger" ? 1 : 0;
-      game.catBlend += (targetBlend - game.catBlend) * Math.min(1, dt * 9);
-      updateMovement(dt);
+
+      if (game.phase === "rest") {
+        updateMovement(dt);
+        if (game.phaseLeft <= 0 && game.running) setPhase("warning");
+      } else if (game.phase === "warning") {
+        /* 警觉阶段不让角色继续位移，只记录玩家是否仍在发出上滑移动指令。 */
+        game.mouse.moving = false;
+        AudioManager.stopStep();
+        if (Input.moveIntent()) game.warningSawMovement = true;
+        if (game.phaseLeft <= 0) {
+          if (game.warningSawMovement && Input.moveIntent()) setPhase("investigate");
+          else setPhase("rest");
+        }
+      } else {
+        game.mouse.moving = false;
+        AudioManager.stopStep();
+        /* 睁眼后及时松手仍可脱险；持续移动撑过确认窗才判负。 */
+        if (!Input.moveIntent()) setPhase("rest");
+        else if (game.phaseLeft <= 0) {
+          failGame("猫咪睁眼时你还在移动！");
+          return;
+        }
+      }
+
       dom.timeLabel.textContent = `剩余时间 ${Math.ceil(game.timeLeft)} 秒`;
     }
 
@@ -1730,23 +1785,32 @@
       // 所有前景对象按“脚底所在的 Y 坐标”排序：老鼠会自然地从餐车前后穿行，不再像贴在不同图层。
       const sceneItems = game.level.obstacles.map(o => ({ depth: obstacleDepth(o), draw: () => drawObstacle(o) }));
       sceneItems.push({ depth: 258, draw: () => {
-        // 回头瞬间让猫咪成为画面焦点：危险态轻微前冲，并用落地暖红光强调抬爪轮廓。
-        // 光晕只覆盖左上看守区，不侵入蛋糕和中央路线，避免重新产生素材遮挡。
-        if (game.catBlend > .02) {
-          const alertPulse = .86 + Math.sin(app.t * 11) * .14;
-          ctx.save(); ctx.globalAlpha = game.catBlend;
-          const catGlow = ctx.createRadialGradient(57, 212, 8, 57, 212, 70);
-          catGlow.addColorStop(0, `rgba(255,224,157,${.28 * alertPulse})`);
-          catGlow.addColorStop(.62, `rgba(238,83,55,${.13 * alertPulse})`);
-          catGlow.addColorStop(1, "rgba(205,49,35,0)");
-          ctx.fillStyle = catGlow; ctx.fillRect(0, 145, 132, 126);
-          ctx.fillStyle = `rgba(91,38,23,${.2 * alertPulse})`;
-          ellipse(58, 257, 43, 9); ctx.fill(); ctx.restore();
+        /*
+         * 三组帧始终占用同一落地点和近似轮廓，切换时不会出现角色跳位。
+         * warning A/B 每 180ms 交替，形成克制的尾巴轻摇；investigate 才睁眼回头。
+         */
+        let catKey = "catBack";
+        let maxW = 100, maxH = 118;
+        if (game.phase === "warning") catKey = Math.floor(game.phaseElapsed / .18) % 2 ? "catWarningB" : "catWarningA";
+        else if (game.phase === "investigate") { catKey = "catInvestigate"; maxW = 106; maxH = 122; }
+
+        if (game.phase !== "rest") {
+          const pulse = .86 + Math.sin(app.t * (game.phase === "warning" ? 7 : 11)) * .14;
+          ctx.save();
+          const glow = ctx.createRadialGradient(57, 212, 8, 57, 212, 67);
+          if (game.phase === "warning") {
+            glow.addColorStop(0, `rgba(255,235,151,${.24 * pulse})`);
+            glow.addColorStop(1, "rgba(235,171,67,0)");
+          } else {
+            glow.addColorStop(0, `rgba(255,211,143,${.30 * pulse})`);
+            glow.addColorStop(.62, `rgba(238,83,55,${.14 * pulse})`);
+            glow.addColorStop(1, "rgba(205,49,35,0)");
+          }
+          ctx.fillStyle = glow; ctx.fillRect(0,145,132,126); ctx.restore();
         }
-        const backDrawn = game.catBlend < .995 && ReferenceArt.sprite("catBack", 57, 201, 100, 118, 1 - game.catBlend);
-        const dangerScale = 1 + game.catBlend * (.16 + Math.sin(app.t * 11) * .012);
-        const frontDrawn = game.catBlend > .005 && ReferenceArt.sprite("catFront", 58, 205, 100 * dangerScale, 118 * dangerScale, game.catBlend);
-        if (!backDrawn && !frontDrawn) return;
+        const catDrawn = ReferenceArt.sprite(catKey, 57, 205, maxW, maxH);
+        /* 新帧仍在解码时使用同一套旧角色兜底，任何网络/缓存速度下都不会出现空白猫咪。 */
+        if (!catDrawn) ReferenceArt.sprite(game.phase === "investigate" ? "catFront" : "catBack", 57, 205, maxW, maxH);
       }});
       sceneItems.push({ depth: game.mouse.y + 40, draw: () => {
         const mouseKey = game.mouse.moving ? "mouseRun" : "mouseStand";
@@ -1786,14 +1850,14 @@
         roundRect(78, 414, 204, 38, 18); ctx.fill(); ctx.stroke();
         ctx.shadowColor = "transparent"; ctx.fillStyle = "#7a2b1d"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
         ctx.font = "800 12px 'PingFang SC','Microsoft YaHei',sans-serif";
-        ctx.fillText("按住上滑前进 · 猫回头立刻松手", 180, 433);
+        ctx.fillText("按住上滑前进 · 猫咪摇尾立刻松手", 180, 433);
         ctx.translate(180, 474 + bob); ctx.fillStyle = "#fff8dc"; ctx.strokeStyle = "#87311f"; ctx.lineWidth = 3;
         ctx.beginPath(); ctx.moveTo(0,-18); ctx.lineTo(15,-2); ctx.lineTo(7,-2); ctx.lineTo(7,18); ctx.lineTo(-7,18); ctx.lineTo(-7,-2); ctx.lineTo(-15,-2); ctx.closePath();
         ctx.fill(); ctx.stroke(); ctx.restore();
       }
 
-      // 危险状态的全屏红色细边框闪烁。
-      if (game.phase === "danger") {
+      // 只有第二阶段睁眼确认才进入红色警戒；第一阶段保持柔和琥珀提示。
+      if (game.phase === "investigate") {
         const alpha = .45 + Math.sin(app.t * 14) * .3;
         const warningTop = -extraTop;
         const warningHeight = H + extraTop + extraBottom;
